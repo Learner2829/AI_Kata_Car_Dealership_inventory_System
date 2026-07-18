@@ -1,20 +1,12 @@
-from django.shortcuts import render
-
-# Create your views here.
 # inventory/views.py
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from django.shortcuts import get_object_or_404
 from .models import Vehicle
 from .serializers import VehicleSerializer
 from .permissions import IsAdminOrReadOnly
-
-
-# inventory/views.py (add to imports at the top)
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAdminUser
-from django.shortcuts import get_object_or_404
 
 
 class VehicleListCreateView(generics.ListCreateAPIView):
@@ -26,15 +18,17 @@ class VehicleListCreateView(generics.ListCreateAPIView):
     serializer_class = VehicleSerializer
     permission_classes = [IsAdminOrReadOnly]
 
+
 class VehicleDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
-    GET: Retrieve a vehicle (Requires JWT) - Handled safely, though not explicitly requested, good practice.
+    GET: Retrieve a vehicle (Requires JWT)
     PUT: Update a vehicle (Requires Admin JWT)
     DELETE: Delete a vehicle (Requires Admin JWT)
     """
     queryset = Vehicle.objects.all()
     serializer_class = VehicleSerializer
     permission_classes = [IsAdminOrReadOnly]
+
 
 class VehicleSearchView(generics.ListAPIView):
     """
@@ -45,15 +39,13 @@ class VehicleSearchView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Vehicle.objects.all()
-        
-        # Retrieve query parameters
+
         make = self.request.query_params.get('make', None)
         model = self.request.query_params.get('model', None)
         category = self.request.query_params.get('category', None)
         min_price = self.request.query_params.get('min_price', None)
         max_price = self.request.query_params.get('max_price', None)
-        
-        # Apply filters conditionally
+
         if make:
             queryset = queryset.filter(make__icontains=make)
         if model:
@@ -64,10 +56,10 @@ class VehicleSearchView(generics.ListAPIView):
             queryset = queryset.filter(price__gte=min_price)
         if max_price:
             queryset = queryset.filter(price__lte=max_price)
-            
+
         return queryset
-    
-# Append these new views to the bottom:
+
+
 class PurchaseVehicleView(APIView):
     """
     POST: Purchase a vehicle (decrease quantity by 1).
@@ -77,7 +69,7 @@ class PurchaseVehicleView(APIView):
 
     def post(self, request, pk):
         vehicle = get_object_or_404(Vehicle, pk=pk)
-        
+
         if vehicle.quantity > 0:
             vehicle.quantity -= 1
             vehicle.save()
@@ -85,24 +77,25 @@ class PurchaseVehicleView(APIView):
                 'message': 'Vehicle purchased successfully.',
                 'quantity': vehicle.quantity
             }, status=status.HTTP_200_OK)
-            
+
         return Response({
             'error': 'Vehicle is out of stock.'
         }, status=status.HTTP_400_BAD_REQUEST)
+
 
 class RestockVehicleView(APIView):
     """
     POST: Restock a vehicle (increase quantity by 1).
     Requires Admin (staff) JWT authentication.
     """
-    permission_classes = [IsAdminUser] # DRF's built-in Admin permission
+    permission_classes = [IsAdminUser]
 
     def post(self, request, pk):
         vehicle = get_object_or_404(Vehicle, pk=pk)
-        
+
         vehicle.quantity += 1
         vehicle.save()
-        
+
         return Response({
             'message': 'Vehicle restocked successfully.',
             'quantity': vehicle.quantity

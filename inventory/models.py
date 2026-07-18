@@ -1,9 +1,5 @@
 from django.db import models
 
-# Create your models here.
-# inventory/models.py
-from django.db import models
-
 class Vehicle(models.Model):
     """
     Model representing a vehicle in the dealership inventory.
