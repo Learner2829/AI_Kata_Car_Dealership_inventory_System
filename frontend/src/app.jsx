@@ -3,6 +3,7 @@ import { useContext } from 'react';
 import { AuthContext } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ChatBot from './components/ChatBot';
 import Login from './components/Login';
 import Register from './components/Register';
 import Home from './components/Home';
@@ -36,6 +37,7 @@ function App() {
         </Routes>
       </main>
       <Footer />
+      <ChatBot />
     </div>
   );
 }
