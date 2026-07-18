@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
+import { formatIndianCurrency } from '../utils/formatCurrency';
 
 const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&h=500&fit=crop';
 
@@ -99,7 +100,7 @@ export default function CarDetail() {
 
           <div className="bg-gray-50 rounded-xl p-6 mb-6">
             <p className="text-sm text-gray-500 mb-1">Starting at</p>
-            <p className="text-4xl font-bold text-gray-900">${Number(vehicle.price).toLocaleString()}</p>
+            <p className="text-4xl font-bold text-gray-900">{formatIndianCurrency(vehicle.price)}</p>
             <p className="text-xs text-gray-400 mt-1">Ex-showroom price</p>
           </div>
 

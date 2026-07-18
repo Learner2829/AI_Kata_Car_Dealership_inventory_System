@@ -96,7 +96,7 @@ export default function VehicleForm({ vehicle, onSubmit, onClose }) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Price ($) *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹) *</label>
               <input name="price" type="number" step="0.01" min="0" value={formData.price} onChange={handleChange}
                 placeholder="25000" className="input-field text-sm" />
               {errors.price && <p className="text-red-500 text-xs mt-1">{errors.price}</p>}

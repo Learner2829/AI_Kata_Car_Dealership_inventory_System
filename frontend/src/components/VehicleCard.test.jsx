@@ -41,7 +41,7 @@ describe('VehicleCard Component', () => {
     expect(screen.getByText('Toyota')).toBeInTheDocument();
     expect(screen.getByText('Camry')).toBeInTheDocument();
     expect(screen.getByText('Sedan')).toBeInTheDocument();
-    expect(screen.getByText('$25,000')).toBeInTheDocument();
+    expect(screen.getByText('₹25,000')).toBeInTheDocument();
   });
 
   it('renders fuel type and transmission specs', () => {

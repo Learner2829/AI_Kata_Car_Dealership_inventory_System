@@ -1,6 +1,7 @@
 import { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { formatIndianCurrency } from '../utils/formatCurrency';
 
 const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=800&h=500&fit=crop';
 
@@ -77,7 +78,7 @@ export default function VehicleCard({ vehicle, onPurchase, onEdit, onDelete, onR
           <div>
             <p className="text-xs text-gray-400">Starting at</p>
             <p className="text-xl font-bold text-gray-900">
-              ${Number(vehicle.price).toLocaleString()}
+              {formatIndianCurrency(vehicle.price)}
             </p>
           </div>
 
