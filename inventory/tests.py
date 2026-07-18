@@ -77,9 +77,9 @@ class VehicleAPITests(APITestCase):
         self.assertEqual(len(response.data), 3)
 
     def test_get_vehicles_unauthenticated(self):
-        """Test unauthenticated users are rejected."""
+        """Test unauthenticated users can browse vehicles (public read access)."""
         response = self.client.get(self.list_url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_vehicle_admin(self):
         """Test admin can create a vehicle."""

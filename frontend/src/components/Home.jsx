@@ -23,9 +23,8 @@ export default function Home() {
         setLoading(false);
       }
     };
-    if (isAuthenticated) fetchVehicles();
-    else setLoading(false);
-  }, [isAuthenticated]);
+    fetchVehicles();
+  }, []);
 
   const handlePurchase = async (id) => {
     try {

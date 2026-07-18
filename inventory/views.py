@@ -2,7 +2,7 @@
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from django.shortcuts import get_object_or_404
 from .models import Vehicle
 from .serializers import VehicleSerializer
@@ -35,7 +35,7 @@ class VehicleSearchView(generics.ListAPIView):
     GET: Search vehicles by make, model, category, or price range.
     """
     serializer_class = VehicleSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
         queryset = Vehicle.objects.all()

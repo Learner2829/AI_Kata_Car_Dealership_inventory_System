@@ -28,8 +28,8 @@ function App() {
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/cars" element={<PrivateRoute><BrowseCars /></PrivateRoute>} />
-          <Route path="/cars/:id" element={<PrivateRoute><CarDetail /></PrivateRoute>} />
+          <Route path="/cars" element={<BrowseCars />} />
+          <Route path="/cars/:id" element={<CarDetail />} />
           <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
           <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
