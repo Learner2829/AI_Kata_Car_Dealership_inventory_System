@@ -97,3 +97,57 @@ class VehicleAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['make'], 'Toyota')
+
+
+# inventory/tests.py (append this class)
+class VehicleActionTests(APITestCase):
+    def setUp(self):
+        # Create users
+        self.buyer = User.objects.create_user(username='buyer2', password='password123')
+        self.admin = User.objects.create_superuser(username='admin2', password='password123')
+        
+        # Create a test vehicle with 1 in stock
+        self.vehicle = Vehicle.objects.create(
+            make='Tesla', model='Model 3', category='Sedan', price=Decimal('45000.00'), quantity=1
+        )
+        
+        # Action Endpoints
+        self.purchase_url = f'/api/vehicles/{self.vehicle.id}/purchase/'
+        self.restock_url = f'/api/vehicles/{self.vehicle.id}/restock/'
+
+    def test_purchase_vehicle_success(self):
+        """Test a buyer can purchase a vehicle and reduce stock by 1."""
+        self.client.force_authenticate(user=self.buyer)
+        response = self.client.post(self.purchase_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.vehicle.refresh_from_db()  # Reload from DB to check new quantity
+        self.assertEqual(self.vehicle.quantity, 0)
+
+    def test_purchase_out_of_stock_vehicle(self):
+        """Test purchasing an out-of-stock vehicle returns a 400 error."""
+        # Set stock to 0 first
+        self.vehicle.quantity = 0
+        self.vehicle.save()
+        
+        self.client.force_authenticate(user=self.buyer)
+        response = self.client.post(self.purchase_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], 'Vehicle is out of stock.')
+
+    def test_restock_vehicle_admin_success(self):
+        """Test an admin can restock a vehicle, increasing stock by 1."""
+        self.client.force_authenticate(user=self.admin)
+        response = self.client.post(self.restock_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.vehicle.refresh_from_db()
+        self.assertEqual(self.vehicle.quantity, 2)
+
+    def test_restock_vehicle_buyer_forbidden(self):
+        """Test a standard buyer cannot restock a vehicle."""
+        self.client.force_authenticate(user=self.buyer)
+        response = self.client.post(self.restock_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

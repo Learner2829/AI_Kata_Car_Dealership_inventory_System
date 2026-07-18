@@ -8,6 +8,15 @@ from .models import Vehicle
 from .serializers import VehicleSerializer
 from .permissions import IsAdminOrReadOnly
 
+
+# inventory/views.py (add to imports at the top)
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAdminUser
+from django.shortcuts import get_object_or_404
+
+
 class VehicleListCreateView(generics.ListCreateAPIView):
     """
     GET: List all vehicles (Requires JWT)
@@ -57,3 +66,44 @@ class VehicleSearchView(generics.ListAPIView):
             queryset = queryset.filter(price__lte=max_price)
             
         return queryset
+    
+# Append these new views to the bottom:
+class PurchaseVehicleView(APIView):
+    """
+    POST: Purchase a vehicle (decrease quantity by 1).
+    Requires standard JWT authentication.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        vehicle = get_object_or_404(Vehicle, pk=pk)
+        
+        if vehicle.quantity > 0:
+            vehicle.quantity -= 1
+            vehicle.save()
+            return Response({
+                'message': 'Vehicle purchased successfully.',
+                'quantity': vehicle.quantity
+            }, status=status.HTTP_200_OK)
+            
+        return Response({
+            'error': 'Vehicle is out of stock.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+class RestockVehicleView(APIView):
+    """
+    POST: Restock a vehicle (increase quantity by 1).
+    Requires Admin (staff) JWT authentication.
+    """
+    permission_classes = [IsAdminUser] # DRF's built-in Admin permission
+
+    def post(self, request, pk):
+        vehicle = get_object_or_404(Vehicle, pk=pk)
+        
+        vehicle.quantity += 1
+        vehicle.save()
+        
+        return Response({
+            'message': 'Vehicle restocked successfully.',
+            'quantity': vehicle.quantity
+        }, status=status.HTTP_200_OK)
