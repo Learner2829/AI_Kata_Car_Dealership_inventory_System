@@ -1,6 +1,6 @@
 # Car Dealership Inventory System
 
-A full-stack application for managing a car dealership's vehicle inventory, built with Django REST Framework (backend) and React (frontend) using Test-Driven Development (TDD).
+A full-stack application for managing a car dealership's vehicle inventory, built with Django REST Framework (backend) and React (frontend) using Test-Driven Development (TDD). Features an AI-powered sales chatbot and Indian Rupee (₹) pricing.
 
 ## Tech Stack
 
@@ -9,8 +9,9 @@ A full-stack application for managing a car dealership's vehicle inventory, buil
 | Backend | Django 6.0.7, Django REST Framework 3.17.1 |
 | Frontend | React 18, Vite 6, Tailwind CSS 3 |
 | Auth | djangorestframework-simplejwt (JWT) |
+| AI Chat | HuggingFace Inference API (DeepSeek-R1-0528) |
 | Database | SQLite (dev) / PostgreSQL (prod) |
-| Testing | Django TestCase (34 tests), Vitest + Testing Library (28 tests) |
+| Testing | Django TestCase (42 tests), Vitest + Testing Library (39 tests) |
 
 ## Features
 
@@ -20,7 +21,9 @@ A full-stack application for managing a car dealership's vehicle inventory, buil
 - **Search & Filter** - Filter vehicles by make, model, category, and price range
 - **Purchase Flow** - Buyers can purchase vehicles (stock decreases automatically)
 - **Admin Dashboard** - Add, edit, delete vehicles, and restock inventory
-- **Responsive UI** - Clean, mobile-friendly design with Tailwind CSS
+- **AI Sales Chatbot** - Floating chat widget with a virtual salesperson (Rahul) who answers vehicle queries using real inventory data
+- **Indian Rupee Pricing** - All prices displayed in ₹/Lakh/Crore format
+- **Responsive UI** - Clean, mobile-friendly CardDekho-inspired design with Tailwind CSS
 
 ## Project Structure
 
@@ -29,11 +32,13 @@ AI_Kata_Car_Dealership_inventory_System/
 ├── config/              # Django project settings
 ├── accounts/            # User model, auth endpoints, tests
 ├── inventory/           # Vehicle model, CRUD, search, purchase, tests
+├── chat/                # AI chatbot proxy, sales prompt, tests
 ├── frontend/            # React SPA
 │   └── src/
-│       ├── components/  # Login, Register, Dashboard, VehicleCard, VehicleForm, SearchBar, Navbar
+│       ├── components/  # Login, Register, Home, BrowseCars, CarDetail, AdminPanel, VehicleCard, VehicleForm, SearchBar, Navbar, ChatBot
 │       ├── context/     # AuthContext (JWT state management)
-│       └── services/    # Axios API client with JWT interceptor
+│       ├── services/    # Axios API client with JWT interceptor
+│       └── utils/       # formatIndianCurrency helper
 ├── manage.py
 ├── requirements.txt
 ├── .gitignore
@@ -48,14 +53,15 @@ AI_Kata_Car_Dealership_inventory_System/
 | POST | `/api/auth/register/` | Register new user | Public |
 | POST | `/api/auth/login/` | Login, returns JWT | Public |
 | POST | `/api/auth/token/refresh/` | Refresh access token | Public |
-| GET | `/api/vehicles/` | List all vehicles | JWT |
+| GET | `/api/vehicles/` | List all vehicles | Public |
 | POST | `/api/vehicles/` | Create vehicle | Admin |
-| GET | `/api/vehicles/search/` | Search/filter vehicles | JWT |
-| GET | `/api/vehicles/<id>/` | Get vehicle detail | JWT |
+| GET | `/api/vehicles/search/` | Search/filter vehicles | Public |
+| GET | `/api/vehicles/<id>/` | Get vehicle detail | Public |
 | PUT | `/api/vehicles/<id>/` | Update vehicle | Admin |
 | DELETE | `/api/vehicles/<id>/` | Delete vehicle | Admin |
 | POST | `/api/vehicles/<id>/purchase/` | Purchase vehicle | JWT |
 | POST | `/api/vehicles/<id>/restock/` | Restock vehicle | Admin |
+| POST | `/api/chat/` | Chat with AI salesperson | Public |
 
 ## Setup & Installation
 
@@ -76,6 +82,9 @@ python manage.py migrate
 # Create admin user
 python manage.py createsuperuser
 
+# Load sample vehicles (20 vehicles with Indian pricing)
+python manage.py load_vehicles
+
 # Start backend server
 python manage.py runserver
 ```
@@ -88,13 +97,22 @@ cd frontend
 # Install dependencies
 npm install
 
-# Start dev server
+# Start dev server (proxies /api to Django backend)
 npm run dev
 ```
 
-The app runs at `http://localhost:5173` (frontend) and `http://localhost:8000` (API).
+The app runs at `http://localhost:5173` (frontend + API proxy).
 
 ## Screenshots
+
+### Home Page
+![Home Page](screenshots/home.png)
+
+### Browse Cars
+![Browse Cars](screenshots/browse-cars.png)
+
+### Vehicle Detail
+![Vehicle Detail](screenshots/vehicle-detail.png)
 
 ### Login Page
 ![Login Page](screenshots/login.png)
@@ -102,24 +120,18 @@ The app runs at `http://localhost:5173` (frontend) and `http://localhost:8000` (
 ### Registration Page
 ![Registration Page](screenshots/register.png)
 
-### Dashboard - Buyer View
-![Dashboard Buyer](screenshots/dashboard-buyer.png)
+### Admin Panel
+![Admin Panel](screenshots/admin-panel.png)
 
-### Dashboard - Admin View
-![Dashboard Admin](screenshots/dashboard-admin.png)
-
-### Search & Filter
-![Search Filter](screenshots/search.png)
-
-### Vehicle Form (Admin - Add/Edit)
-![Vehicle Form](screenshots/vehicle-form.png)
+### AI Chatbot
+![Chatbot](screenshots/chatbot.png)
 
 ## Test Report
 
-### Backend Tests: 34/34 Passing
+### Backend Tests: 42/42 Passing
 
 ```
-Ran 34 tests in 119.503s
+Ran 42 tests in 146.343s
 OK
 ```
 
@@ -145,7 +157,7 @@ OK
 | `test_vehicle_string_representation` | __str__ returns "Make Model" | PASS |
 | `test_vehicle_default_quantity` | Quantity defaults to zero | PASS |
 | `test_get_vehicles_authenticated` | Buyer can list vehicles (200) | PASS |
-| `test_get_vehicles_unauthenticated` | Unauthenticated returns 401 | PASS |
+| `test_get_vehicles_unauthenticated` | Unauthenticated users can browse (public) | PASS |
 | `test_create_vehicle_admin` | Admin can create vehicle (201) | PASS |
 | `test_create_vehicle_buyer_forbidden` | Buyer gets 403 on create | PASS |
 | `test_retrieve_vehicle_detail` | Any user can get single vehicle | PASS |
@@ -167,11 +179,24 @@ OK
 | `test_restock_vehicle_admin_success` | Admin can restock (increases by 1) | PASS |
 | `test_restock_vehicle_buyer_forbidden` | Buyer gets 403 on restock | PASS |
 
-### Frontend Tests: 28/28 Passing
+#### Test Breakdown - `chat` app (8 tests):
+
+| Test | Description | Result |
+|------|-------------|--------|
+| `test_chat_success_returns_reply` | Chat endpoint returns AI reply | PASS |
+| `test_chat_missing_messages_field_returns_400` | Missing field returns 400 | PASS |
+| `test_chat_empty_messages_returns_400` | Empty messages returns 400 | PASS |
+| `test_chat_api_error_returns_502` | HuggingFace API error returns 502 | PASS |
+| `test_chat_timeout_returns_504` | Timeout returns 504 | PASS |
+| `test_chat_invalid_response_format_returns_502` | Bad response format returns 502 | PASS |
+| `test_chat_strips_think_tags` | Removes `<think>` tags from reply | PASS |
+| `test_chat_requires_no_authentication` | Chat is publicly accessible | PASS |
+
+### Frontend Tests: 39/39 Passing
 
 ```
-Test Files  6 passed (6)
-     Tests  28 passed (28)
+Test Files  7 passed (7)
+     Tests  39 passed (39)
 ```
 
 #### Test Breakdown:
@@ -184,13 +209,16 @@ Test Files  6 passed (6)
 | `VehicleCard.test.jsx` | Vehicle details, purchase button, stock status, admin controls | 7/7 PASS |
 | `VehicleForm.test.jsx` | Add/edit mode, validation, form submission, cancel | 5/5 PASS |
 | `SearchBar.test.jsx` | Filter inputs, search submission, clear functionality | 5/5 PASS |
+| `ChatBot.test.jsx` | Toggle, send message, loading state, empty input | 9/9 PASS |
+
+### Total: 81/81 Tests Passing
 
 ## Default Test Credentials
 
 | Role | Username | Password |
 |------|----------|----------|
-| Admin (staff) | `admin` | `password123` |
-| Buyer | `buyer` | `password123` |
+| Admin (staff) | `admin` | `admin123` |
+| Buyer | `test` | `test123` |
 
 ---
 
@@ -214,20 +242,26 @@ Test Files  6 passed (6)
    - Cleaned up 14 instances of dead/duplicate imports across 6 backend files
    - Created all supporting files (requirements.txt, .gitignore)
 
-3. **Test Writing:** AI generated comprehensive test suites:
-   - Expanded backend tests from 15 to 34 (added vehicle detail/update/delete, multi-filter search, duplicate registration, JWT refresh, 404 handling, etc.)
-   - Expanded frontend tests from 1 to 28 (Register, Navbar, VehicleCard, VehicleForm, SearchBar)
+3. **AI Chatbot Development:** I asked the AI to build a personalized sales chatbot. It:
+   - Created the `chat` Django app with a HuggingFace API proxy and salesperson system prompt
+   - Built a floating React ChatBot widget with conversation UI and typing indicator
+   - Diagnosed and fixed the HF_TOKEN bug (was a Python tuple instead of a string)
+   - Added inventory context injection so the chatbot can reference real vehicles in stock
+
+4. **Test Writing:** AI generated comprehensive test suites:
+   - Expanded backend tests from 15 to 42 (added vehicle detail/update/delete, multi-filter search, duplicate registration, JWT refresh, 404 handling, 8 chat tests)
+   - Expanded frontend tests from 1 to 39 (Register, Navbar, VehicleCard, VehicleForm, SearchBar, ChatBot)
    - Fixed jsdom 27.x ESM incompatibility by identifying the root cause and downgrading
 
-4. **Documentation:** AI generated README.md, PROMPTS.md, and all structured documentation sections.
+5. **Documentation:** AI generated README.md, PROMPTS.md, and all structured documentation sections.
 
-5. **Code Cleanup:** AI identified and cleaned duplicate imports, dead code, and boilerplate comments across the entire codebase.
+6. **Code Cleanup:** AI identified and cleaned duplicate imports, dead code, and boilerplate comments across the entire codebase.
 
 ### Impact on Workflow
 
-- **Speed:** Went from "login page broken" to "full application with 62 passing tests" in a single session
+- **Speed:** Went from "login page broken" to "full application with 81 passing tests" in a single session
 - **Quality:** AI caught subtle issues like case-sensitive imports, duplicate variable definitions in settings.py, and missing CORS configuration
-- **Test Coverage:** AI wrote meaningful edge-case tests (duplicate registration, permission checks, 404 handling, multi-filter search) that I would have likely overlooked
+- **Test Coverage:** AI wrote meaningful edge-case tests (duplicate registration, permission checks, 404 handling, multi-filter search, chat error handling) that I would have likely overlooked
 - **Consistency:** All generated code follows consistent patterns, naming conventions, and Tailwind CSS styling
 
 ### Reflection
