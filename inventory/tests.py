@@ -33,9 +33,10 @@ class VehicleModelTests(TestCase):
             model="Civic",
             category="Sedan",
             price=Decimal("22000.00"),
-            quantity=3
+            quantity=3,
+            year=2024
         )
-        self.assertEqual(str(vehicle), "Honda Civic")
+        self.assertEqual(str(vehicle), "2024 Honda Civic")
 
     def test_vehicle_default_quantity(self):
         """Test that vehicle quantity defaults to zero."""

@@ -27,7 +27,7 @@ describe('Login Component', () => {
     // Find inputs and button
     const usernameInput = screen.getByLabelText(/username/i);
     const passwordInput = screen.getByLabelText(/password/i);
-    const submitButton = screen.getByRole('button', { name: /login/i });
+    const submitButton = screen.getByRole('button', { name: /sign in/i });
     
     // Simulate user typing
     fireEvent.change(usernameInput, { target: { value: 'testbuyer' } });

@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi, useContext } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
 import Navbar from './Navbar';
 import { AuthContext } from '../context/AuthContext';
@@ -34,10 +34,10 @@ describe('Navbar Component', () => {
     expect(screen.getByText(/register/i).closest('a')).toHaveAttribute('href', '/register');
   });
 
-  it('shows dashboard link, username, and logout when authenticated', () => {
+  it('shows nav links, username, and logout when authenticated', () => {
     renderNavbar({ isAuthenticated: true, username: 'john' });
-    expect(screen.getByText(/dashboard/i)).toBeInTheDocument();
-    expect(screen.getByText('john')).toBeInTheDocument();
+    expect(screen.getByText('Browse Cars')).toBeInTheDocument();
+    expect(screen.getByText(/john/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument();
   });
 
@@ -58,5 +58,3 @@ describe('Navbar Component', () => {
     expect(logout).toHaveBeenCalledTimes(1);
   });
 });
-
-import { fireEvent } from '@testing-library/react';

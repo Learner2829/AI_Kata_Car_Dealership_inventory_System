@@ -2,9 +2,13 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useContext } from 'react';
 import { AuthContext } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import Login from './components/Login';
 import Register from './components/Register';
-import Dashboard from './components/Dashboard';
+import Home from './components/Home';
+import BrowseCars from './components/BrowseCars';
+import CarDetail from './components/CarDetail';
+import AdminPanel from './components/AdminPanel';
 
 const PrivateRoute = ({ children }) => {
   const { isAuthenticated } = useContext(AuthContext);
@@ -18,21 +22,20 @@ const PublicRoute = ({ children }) => {
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
-      <Routes>
-        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/cars" element={<PrivateRoute><BrowseCars /></PrivateRoute>} />
+          <Route path="/cars/:id" element={<PrivateRoute><CarDetail /></PrivateRoute>} />
+          <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </main>
+      <Footer />
     </div>
   );
 }

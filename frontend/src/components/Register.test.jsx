@@ -18,15 +18,15 @@ describe('Register Component', () => {
     renderRegister();
     expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^Password$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
 
   it('shows link to login page', () => {
     renderRegister();
     expect(screen.getByText(/already have an account/i)).toBeInTheDocument();
-    expect(screen.getByText(/login/i).closest('a')).toHaveAttribute('href', '/login');
+    expect(screen.getByText(/sign in/i).closest('a')).toHaveAttribute('href', '/login');
   });
 
   it('shows error when passwords do not match', async () => {
@@ -36,7 +36,7 @@ describe('Register Component', () => {
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@test.com' } });
     fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'pass123' } });
     fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'pass456' } });
-    fireEvent.click(screen.getByRole('button', { name: /register/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create account/i }));
 
     expect(await screen.findByText(/passwords do not match/i)).toBeInTheDocument();
     expect(api.post).not.toHaveBeenCalled();
@@ -50,7 +50,7 @@ describe('Register Component', () => {
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'new@test.com' } });
     fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'SecurePass1' } });
     fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'SecurePass1' } });
-    fireEvent.click(screen.getByRole('button', { name: /register/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create account/i }));
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('auth/register/', {
@@ -71,7 +71,7 @@ describe('Register Component', () => {
     fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 't@t.com' } });
     fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'pass123' } });
     fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'pass123' } });
-    fireEvent.click(screen.getByRole('button', { name: /register/i }));
+    fireEvent.click(screen.getByRole('button', { name: /create account/i }));
 
     expect(await screen.findByText(/already taken/i)).toBeInTheDocument();
   });
