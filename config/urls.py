@@ -20,3 +20,12 @@ from django.urls import path
 urlpatterns = [
     path('admin/', admin.site.urls),
 ]
+
+# config/urls.py
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/auth/', include('accounts.urls')), # Route /api/auth/ to our accounts app
+]
