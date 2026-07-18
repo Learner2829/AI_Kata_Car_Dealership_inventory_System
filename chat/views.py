@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from inventory.models import Vehicle
 
 HF_API_URL = "https://router.huggingface.co/v1/chat/completions"
-HF_TOKEN = os.environ.get("HF_TOKEN", "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")
+HF_TOKEN = "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"
 HF_MODEL = "deepseek-ai/DeepSeek-R1-0528:novita"
 
 SALES_PROMPT = """You are Rahul, a friendly and experienced car sales consultant at Kata Car Dealership in India. 
