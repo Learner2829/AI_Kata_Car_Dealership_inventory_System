@@ -1,9 +1,6 @@
-from django.db import models
-
-# Create your models here.
-# accounts/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
 
 class CustomUser(AbstractUser):
     """
@@ -11,7 +8,7 @@ class CustomUser(AbstractUser):
     Extends AbstractUser to natively support standard users (buyers)
     and admin users (staff) via the 'is_staff' flag.
     """
-    
+
     # Fix for reverse accessor clash (fields.E304)
     groups = models.ManyToManyField(
         'auth.Group',
