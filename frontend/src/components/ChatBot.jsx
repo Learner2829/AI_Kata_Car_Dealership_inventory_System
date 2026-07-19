@@ -4,8 +4,43 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 
 const WELCOME_MESSAGE = {
   role: 'assistant',
-  content: "Hi! I'm Rahul from Kata Car Dealership. I'd love to help you find your perfect car! Tell me — what's your budget, and what kind of car are you looking for?",
+  content: "Hi! I'm Rahul from Kata Car Dealership. How can I help you today?\n[OPTIONS]Find a car|Check prices|Book a test drive|Exchange my car[/OPTIONS]",
 };
+
+function parseMessage(content) {
+  const optionRegex = /\[OPTIONS\](.*?)\[\/OPTIONS\]/s;
+  const match = content.match(optionRegex);
+  if (!match) return { text: content, options: [] };
+  const text = content.replace(optionRegex, '').trim();
+  const options = match[1].split('|').map((o) => o.trim()).filter(Boolean);
+  return { text, options };
+}
+
+function BotMessage({ content, onOptionClick }) {
+  const { text, options } = parseMessage(content);
+  return (
+    <div className="flex flex-col gap-1.5">
+      {text && (
+        <div className="max-w-[85%] px-3.5 py-2.5 text-sm leading-relaxed rounded-2xl bg-white text-gray-800 border border-gray-200 shadow-sm rounded-bl-md whitespace-pre-line">
+          {text}
+        </div>
+      )}
+      {options.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 max-w-[90%]">
+          {options.map((opt, i) => (
+            <button
+              key={i}
+              onClick={() => onOptionClick(opt)}
+              className="px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 rounded-full hover:bg-blue-100 hover:border-blue-300 transition-colors"
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,8 +60,7 @@ export default function ChatBot() {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
 
-  const sendMessage = async () => {
-    const text = input.trim();
+  const sendMessage = async (text) => {
     if (!text || isLoading) return;
 
     const userMsg = { role: 'user', content: text };
@@ -66,10 +100,19 @@ export default function ChatBot() {
     }
   };
 
+  const handleSendFromInput = () => {
+    const text = input.trim();
+    if (text) sendMessage(text);
+  };
+
+  const handleOptionClick = (option) => {
+    sendMessage(option);
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      handleSendFromInput();
     }
   };
 
@@ -118,15 +161,13 @@ export default function ChatBot() {
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50">
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div
-                  className={`max-w-[85%] px-3.5 py-2.5 text-sm leading-relaxed rounded-2xl ${
-                    msg.role === 'user'
-                      ? 'bg-blue-600 text-white rounded-br-md'
-                      : 'bg-white text-gray-800 border border-gray-200 shadow-sm rounded-bl-md'
-                  }`}
-                >
-                  {msg.content}
-                </div>
+                {msg.role === 'user' ? (
+                  <div className="max-w-[85%] px-3.5 py-2.5 text-sm leading-relaxed rounded-2xl bg-blue-600 text-white rounded-br-md">
+                    {msg.content}
+                  </div>
+                ) : (
+                  <BotMessage content={msg.content} onOptionClick={handleOptionClick} />
+                )}
               </div>
             ))}
 
@@ -158,7 +199,7 @@ export default function ChatBot() {
                 className="flex-1 resize-none px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent max-h-20"
               />
               <button
-                onClick={sendMessage}
+                onClick={handleSendFromInput}
                 disabled={!input.trim() || isLoading}
                 className={`p-2.5 rounded-xl transition-all duration-200 flex-shrink-0 ${
                   input.trim() && !isLoading
