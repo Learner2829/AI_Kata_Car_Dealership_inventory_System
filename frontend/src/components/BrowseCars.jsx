@@ -5,7 +5,7 @@ import api from '../services/api';
 import VehicleCard from './VehicleCard';
 import VehicleForm from './VehicleForm';
 
-const CATEGORIES = ['All', 'SUV', 'Sedan', 'Truck', 'Electric', 'Coupe', 'Convertible', 'Hatchback'];
+const CATEGORIES = ['All', 'SUV', 'Sedan', 'Truck', 'Electric', 'Coupe', 'Convertible', 'Hatchback', 'Van'];
 
 export default function BrowseCars() {
   const { isStaff } = useContext(AuthContext);
@@ -29,7 +29,7 @@ export default function BrowseCars() {
       if (hasFilter) {
         const queryParams = { ...params };
         if (searchQuery) {
-          queryParams.make = searchQuery;
+          queryParams.search = searchQuery;
         }
         response = await api.get('vehicles/search/', { params: queryParams });
       } else {

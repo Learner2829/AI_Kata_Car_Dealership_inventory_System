@@ -3,6 +3,7 @@ from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from .models import Vehicle
 from .serializers import VehicleSerializer
@@ -40,12 +41,19 @@ class VehicleSearchView(generics.ListAPIView):
     def get_queryset(self):
         queryset = Vehicle.objects.all()
 
+        search = self.request.query_params.get('search', None)
         make = self.request.query_params.get('make', None)
         model = self.request.query_params.get('model', None)
         category = self.request.query_params.get('category', None)
         min_price = self.request.query_params.get('min_price', None)
         max_price = self.request.query_params.get('max_price', None)
 
+        if search:
+            queryset = queryset.filter(
+                Q(make__icontains=search) |
+                Q(model__icontains=search) |
+                Q(category__icontains=search)
+            )
         if make:
             queryset = queryset.filter(make__icontains=make)
         if model:
