@@ -106,25 +106,22 @@ The app runs at `http://localhost:5173` (frontend + API proxy).
 ## Screenshots
 
 ### Home Page
-![Home Page](screenshots/home.png)
-
-### Browse Cars
-![Browse Cars](screenshots/browse-cars.png)
-
-### Vehicle Detail
-![Vehicle Detail](screenshots/vehicle-detail.png)
+![Home Page](screenshots/Home.png)
 
 ### Login Page
-![Login Page](screenshots/login.png)
+![Login Page](screenshots/Login_Page.png)
 
 ### Registration Page
-![Registration Page](screenshots/register.png)
+![Registration Page](screenshots/Registration_Page.png)
+
+### Vehicle Detail
+![Vehicle Detail](screenshots/Vehicle_Detail.png)
 
 ### Admin Panel
-![Admin Panel](screenshots/admin-panel.png)
+![Admin Panel](screenshots/Admin_Panel.png)
 
 ### AI Chatbot
-![Chatbot](screenshots/chatbot.png)
+![Chatbot](screenshots/Chatbot.png)
 
 ## Test Report
 

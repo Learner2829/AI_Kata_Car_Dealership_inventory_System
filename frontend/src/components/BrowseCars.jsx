@@ -15,6 +15,7 @@ export default function BrowseCars() {
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
+  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
 
   const activeCategory = searchParams.get('category') || 'All';
   const searchQuery = searchParams.get('search') || '';
@@ -49,6 +50,24 @@ export default function BrowseCars() {
     }
     fetchVehicles(params);
   }, [activeCategory, searchQuery]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const newParams = new URLSearchParams(searchParams);
+    if (searchInput.trim()) {
+      newParams.set('search', searchInput.trim());
+    } else {
+      newParams.delete('search');
+    }
+    setSearchParams(newParams);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput('');
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('search');
+    setSearchParams(newParams);
+  };
 
   const handleCategoryChange = (cat) => {
     const newParams = new URLSearchParams(searchParams);
@@ -145,6 +164,32 @@ export default function BrowseCars() {
           </button>
         )}
       </div>
+
+      {/* Search bar */}
+      <form onSubmit={handleSearch} className="flex gap-2 mb-6">
+        <div className="flex-1 flex items-center bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+          <svg className="w-5 h-5 text-gray-400 ml-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search by make, model, or keyword..."
+            className="w-full px-3 py-3 text-sm focus:outline-none"
+          />
+          {searchInput && (
+            <button type="button" onClick={handleClearSearch} className="px-3 text-gray-400 hover:text-gray-600">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </div>
+        <button type="submit" className="px-6 py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm">
+          Search
+        </button>
+      </form>
 
       {/* Category tabs */}
       <div className="flex flex-wrap gap-2 mb-6 pb-4 border-b border-gray-200">
